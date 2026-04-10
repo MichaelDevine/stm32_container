@@ -10,7 +10,7 @@ setlocal enabledelayedexpansion
 
 REM Local initialization script for things that devcontainer.json can't do.
 REM 1. Find, Bind, and Attach ST-Link debugger using usbipd
-REM 2. Prepare Unix ath to device to be used in devcontainer.json
+REM 2. Prepare Unix path to device to be used in devcontainer.json
 
 echo devcontainer.bat runs on host to bridge USB devices
 echo to the dev container:
@@ -24,7 +24,8 @@ setx USB_STLINK_DEVICE_PATH ""
 REM Parent path for a USB device on Ubuntu 24.04
 set UNIX_STYLE_DEVICE=/dev/bus/usb
 
-REM Get list of USB devices, filter for ST-Link, extract BUSID
+REM Get list of USB devices, filter for ST-Link, extract BUSID, and 
+REM bind and attach with usbipd
 for /f "tokens=1" %%i in ('usbipd list ^| findstr /C:"ST-Link"') do (
     set "value=%%i"
     REM Check if string is short (BUSID) not long (GUID)

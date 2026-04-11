@@ -1,45 +1,45 @@
-// Author: Michael Devine
-// Company: Circumjovial, LLC
-// Copyright (c): 2026
-// License: MIT License
-// Web: www.circumjovial.com
-// Version: 0.1
+	// Author: Michael Devine
+	// Company: Circumjovial, LLC
+	// Copyright (c): 2026
+	// License: MIT License
+	// Web: www.circumjovial.com
+	// Version: 0.1
 
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
-{
-	"name": "STM32 Dev Container",
-	"build": {
-    	"dockerfile": "Dockerfile"
-  	},
-   // Needed for access to USB devices, USB_STLINK_DEVICE_PATH is set by devcontainer.bat
-   // which is run by Container Tools before this is evaluated.
-	"runArgs": ["--device=${localEnv:USB_STLINK_DEVICE_PATH}","--device=/dev/ttyACM0"],
-   "customizations": {
-		"vscode": {
-         // Extensions installed inside the container.
-			"extensions": [
-				"ms-vscode.cpptools", // C/C++ IntelliSense, debugging, and code browsing
-				"ms-vscode.cmake-tools", // CMake integration for building
-				"stmicroelectronics.stm32-vscode-extension", // Official STM32 VS Code extension
-			  "marus25.cortex-debug", // Debugging for ARM Cortex-M microcontrollers
-        "ms-vscode.vscode-serial-monitor" // Serial terminal for COM port
-			],
-			"settings": {
-    			"terminal.integrated.shell.linux": "/bin/bash",
-            "C_Cpp.default.compilerPath": "target",
-            "C_Cpp.default.intelliSenseMode": "linux-gcc-arm"
-  			}
-		}
-	},
+	// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+	// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+	{
+		"name": "STM32 Dev Container",
+		"build": {
+				"dockerfile": "Dockerfile"
+			},
+		// Needed for access to USB devices, USB_STLINK_DEVICE_PATH is set by devcontainer.bat
+		// which is run by Container Tools before this is evaluated.
+		"runArgs": ["--device=${localEnv:USB_STLINK_DEVICE_PATH}","--device=/dev/ttyACM0"],
+		"customizations": {
+			"vscode": {
+					// Extensions installed inside the container.
+				"extensions": [
+					"ms-vscode.cpptools", // C/C++ IntelliSense, debugging, and code browsing
+					"ms-vscode.cmake-tools", // CMake integration for building
+					"stmicroelectronics.stm32-vscode-extension", // Official STM32 VS Code extension
+					"marus25.cortex-debug", // Debugging for ARM Cortex-M microcontrollers
+					"ms-vscode.vscode-serial-monitor" // Serial terminal for COM port
+				],
+				"settings": {
+						"terminal.integrated.shell.linux": "/bin/bash",
+							"C_Cpp.default.compilerPath": "target",
+							"C_Cpp.default.intelliSenseMode": "linux-gcc-arm"
+					}
+			}
+		},
 
-	"mounts": [
-		"source=${localWorkspaceFolder},target=/workspace,type=bind"
-	],
+		"mounts": [
+			"source=${localWorkspaceFolder},target=/workspace,type=bind"
+		],
 
-	"remoteUser": "vscode",
+		"remoteUser": "vscode",
 
-	// This command is run before any other part of this file. It automatically finds the ST-Link device, 
-	// and binds to it with usbipd for ip-based passthrough. It's automatic!
-	"initializeCommand" : ".devcontainer\\devcontainer.bat"
-}
+		// This command is run before any other part of this file. It automatically finds the ST-Link device, 
+		// and binds to it with usbipd for ip-based passthrough. It's automatic!
+		"initializeCommand" : ".devcontainer\\devcontainer.bat"
+	}

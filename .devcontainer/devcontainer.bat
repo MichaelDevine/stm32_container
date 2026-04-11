@@ -41,7 +41,8 @@ for /f "tokens=1" %%i in ('usbipd list ^| findstr /C:"ST-Link"') do (
             REM Turn the Windows port info into Unix device path
             set UNIX_STYLE_DEVICE=!UNIX_STYLE_DEVICE!/00!value:-=/00!
             set TMP_DEVICE_PATH=!TMP_DEVICE_PATH!/!UNIX_STYLE_DEVICE!
-            echo USB Path: !UNIX_STYLE_DEVICE!
+            echo ST-Link Device found at Linux Path: 
+            echo    !UNIX_STYLE_DEVICE!
 
             REM Save the device path in the registry, it will
             REM be picked up in the devcontainer.json file.
@@ -51,6 +52,11 @@ for /f "tokens=1" %%i in ('usbipd list ^| findstr /C:"ST-Link"') do (
         )
     )
 )
+echo ST-Link Device not found.
 :afterLoop
 
 echo.
+
+timeout /t 5
+
+exit /b 0

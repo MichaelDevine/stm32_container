@@ -12,9 +12,8 @@
 	"build": {
 			"dockerfile": "Dockerfile"
 		},
-	// Needed for access to USB devices, USB_STLINK_DEVICE_PATH is set by devcontainer.bat
-	// which is run by Container Tools before this is evaluated.
-	"runArgs": ["--device=${localEnv:USB_STLINK_DEVICE_PATH}","--device=/dev/ttyACM0"],
+	// Hardcoded to the current ST-Link USB node exposed by Docker Desktop after usbipd attach.
+	"runArgs": ["--device=/dev/bus/usb/001/004","--device=/dev/ttyACM0"],
 	"customizations": {
 		"vscode": {
 				// Extensions installed inside the container.
@@ -36,10 +35,10 @@
 	"mounts": [
 		"source=${localWorkspaceFolder},target=/workspace,type=bind"
 	],
+	"postStartCommand": "sudo bash ${containerWorkspaceFolder}/.devcontainer/fix-device-permissions.sh",
 
 	"remoteUser": "vscode",
 
-	// This command is run before any other part of this file. It automatically finds the ST-Link device, 
-	// and binds to it with usbipd for ip-based passthrough. It's automatic!
+	// This command runs on the host before startup and attaches a supported ST-Link to Docker Desktop via usbipd.
 	"initializeCommand" : ".devcontainer\\devcontainer.bat"
 }

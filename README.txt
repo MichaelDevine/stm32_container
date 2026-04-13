@@ -10,9 +10,16 @@ a VS Code Dev Container with everything needed to build, debug, and connect with
 an stm32 ST-Link connected device. You can use this as a reference to see how to do it, or
 adapt it to your environment. The scripts automatically find your ST-Link device and 
 automatically set up the permissions and passthrough for the tools inside the container to 
-connect to your device via ST-Link and serial. Most importantly, it doesn't run privileged, 
-ensuring secure containerization. The USB permission passed through only allows access to the 
-ST-Link device, no others, and the serial permission is just for any /dev/ttyASM* devices. 
+connect to your device via ST-Link and serial. The current dev container avoids 
+`--privileged` and instead maps the current ST-Link USB node and `/dev/ttyACM0` 
+explicitly after usbipd attach. The initialize script still limits usbipd attachment 
+to supported ST-Link hardware IDs. 
+
+Inside the container, the passed-through ST-Link USB node can still arrive as `root:root`
+with mode `0664`, which prevents the `vscode` user from opening it even though `lsusb`
+can still see it. The dev container now repairs ownership and mode at startup with
+`.devcontainer/fix-device-permissions.sh`, because Docker-passed device nodes are not
+reliably updated by the image's `udev` rules.
 
 After you've done the steps below just once, from then on you just open the folder with VS Code
 and you're developing in your container. No need to redo the passthrough every time. 
@@ -31,10 +38,13 @@ On Windows 11:
 6. Edit Dockerfile, launch.json, and c_cpp_properties.json to reference your 
    toolchain and board. The environment will work without doing this if you 
    just want to see how it works. 
+   The current `.devcontainer/devcontainer.json` hardcodes the ST-Link USB path 
+   to `/dev/bus/usb/001/004`, so update that value if Docker Desktop exposes 
+   your debugger on a different node.
 7. Open the git repo folder with VS Code. If "Reopen in Container" doesn't pop up, 
    find it and run it with CTRL-SHIFT-P
 8. Follow the prompts, make sure you say yes to additional installs which will pop
    up in the lower right or is accessible from the notifications icon also in the lower
    right. Thpse are the installs for VS Code plugins inside the container.
 9. After everything finishes, your device should show up in the "STM32CUBE DEVICES" tab
-   on the lower left and Serial Monitor should have /dev/ttyASM0 as a choice. 
+   on the lower left and Serial Monitor should have /dev/ttyACM0 as a choice. 

@@ -5,6 +5,14 @@ License: MIT License
 Web: www.circumjovial.com
 Version: 0.1
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!
+There are currently two issues in this that prevent it from working on most systems. I am 
+working on fixing these. 
+1. The ST-Link device does not necessarily enumerate to the same hub and port as it does on
+Windows, even if it's the only device on the hub. 
+2. The device has to have already been bound using usbipd, which requires elevated privileges,
+for the script to work. My own bindings were persisted, hence I did not notice this. 
+
 This repository contains config files and scripts that make it seemless to create and launch
 a VS Code Dev Container with everything needed to build, debug, and connect with terminal, to
 an stm32 ST-Link connected device. You can use this as a reference to see how to do it, or

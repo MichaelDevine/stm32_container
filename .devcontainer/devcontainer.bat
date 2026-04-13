@@ -20,14 +20,21 @@ set "SUPPORTED_STLINK_IDS=0483:3744 0483:3748 0483:374B 0483:3752 0483:374E 0483
 set "STLINK_HARDWARE_ID="
 set "SCRIPT_EXIT_CODE=0"
 set "STLINK_BUSID="
+set "STLINK_USB_BUS_NUMBER="
+set "STLINK_USB_BUS_DIR="
 set "UNSUPPORTED_STLINK_BUSID="
 set "UNSUPPORTED_STLINK_HARDWARE_ID="
+
+REM Clear the saved bus mount path so a failed discovery does not leave a stale value behind.
+setx USB_STLINK_BUS_DIR "" >nul
 
 REM Find an ST-Link device, confirm its hardware ID is in the supported list,
 REM and then bind/attach it with usbipd.
 :findDevice
 set "STLINK_BUSID="
 set "STLINK_HARDWARE_ID="
+set "STLINK_USB_BUS_NUMBER="
+set "STLINK_USB_BUS_DIR="
 set "UNSUPPORTED_STLINK_BUSID="
 set "UNSUPPORTED_STLINK_HARDWARE_ID="
 
@@ -111,6 +118,12 @@ if /i "!USBIPD_DEVICE_STATE!"=="Attached" (
         goto :finish
     )
 )
+
+for /f "tokens=1 delims=-" %%i in ("!STLINK_BUSID!") do set "STLINK_USB_BUS_NUMBER=%%i"
+set "STLINK_USB_BUS_NUMBER=000!STLINK_USB_BUS_NUMBER!"
+set "STLINK_USB_BUS_DIR=/dev/bus/usb/!STLINK_USB_BUS_NUMBER:~-3!"
+echo   Saving USB bus mount path: !STLINK_USB_BUS_DIR!
+setx USB_STLINK_BUS_DIR !STLINK_USB_BUS_DIR! >nul
 
 :finish
 

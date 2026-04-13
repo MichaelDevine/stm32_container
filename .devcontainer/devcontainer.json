@@ -12,8 +12,15 @@
 	"build": {
 			"dockerfile": "Dockerfile"
 		},
-	// Hardcoded to the current ST-Link USB node exposed by Docker Desktop after usbipd attach.
-	"runArgs": ["--device=/dev/bus/usb/001/004","--device=/dev/ttyACM0"],
+	// Linux assigns a new DEVNUM when usbipd re-enumerates the ST-LINK, so do not bind a
+	// single /dev/bus/usb/BBB/DDD node here. devcontainer.bat persists the discovered bus
+	// mount path in USB_STLINK_BUS_DIR, and the device cgroup rule allows USB character
+	// device read/write access without mknod.
+	"runArgs": [
+		"--device-cgroup-rule",
+		"c 189:* rw",
+		"--device=/dev/ttyACM0"
+	],
 	"customizations": {
 		"vscode": {
 				// Extensions installed inside the container.
@@ -33,7 +40,8 @@
 	},
 
 	"mounts": [
-		"source=${localWorkspaceFolder},target=/workspace,type=bind"
+		"source=${localWorkspaceFolder},target=/workspace,type=bind",
+		"source=${localEnv:USB_STLINK_BUS_DIR},target=${localEnv:USB_STLINK_BUS_DIR},type=bind"
 	],
 	"postStartCommand": "sudo bash ${containerWorkspaceFolder}/.devcontainer/fix-device-permissions.sh",
 

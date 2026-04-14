@@ -161,4 +161,3 @@ That remains a separate issue. The current dev container still maps `/dev/ttyACM
 - [`.devcontainer/devcontainer.bat`](.devcontainer/devcontainer.bat): Host-side `usbipd` discovery and attach script
 - [`.devcontainer/fix-device-permissions.sh`](.devcontainer/fix-device-permissions.sh): Container-side permission repair
 - [`.devcontainer/Dockerfile`](.devcontainer/Dockerfile): Image definition
-- [`SESSION-2026-04-13.md`](SESSION-2026-04-13.md): Session notes for the USB permission and re-enumeration work

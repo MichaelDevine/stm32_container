@@ -87,6 +87,7 @@ USER root
 # them in place for environments where udev is actively managing the device inside the image.
 RUN echo "SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"0483\", MODE=\"0666\"" >> /etc/udev/rules.d/99-stm32-usb.rules
 RUN echo "KERNEL==\"ttyACM[0-9]*\", MODE=\"0666\"" >> /etc/udev/rules.d/99-stm32-usb.rules
+RUN ln -s /home/vscode/zephyrproject /workspaces
 
 USER vscode
 WORKDIR /home/vscode/zephyrproject

@@ -50,7 +50,7 @@
 	"mounts": [
 		"source=${localEnv:USB_STLINK_BUS_DIR},target=${localEnv:USB_STLINK_BUS_DIR},type=bind"
 	],
-	"postStartCommand": "sudo bash ${containerWorkspaceFolder}/.devcontainer/fix-device-permissions.sh",
+	"postStartCommand": "sudo bash \"${containerWorkspaceFolder}/.devcontainer/post-start.sh\" \"${containerWorkspaceFolder}\"",
 
 	"remoteUser": "vscode",
 

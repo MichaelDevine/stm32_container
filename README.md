@@ -54,6 +54,8 @@ The dev container definition in [`.devcontainer/devcontainer.json`](.devcontaine
 - adds the Docker device cgroup rule `c 189:* rw` for USB character devices
 - runs [`.devcontainer/fix-device-permissions.sh`](.devcontainer/fix-device-permissions.sh) after startup
 
+The image in [`.devcontainer/Dockerfile`](.devcontainer/Dockerfile) also installs a wrapper at `/usr/local/bin/STM32_Programmer_CLI`. That wrapper resolves the newest installed STM32 programmer bundle at runtime, so the command works even when the extension installs or updates the bundle after container startup.
+
 The startup permission-fix script is needed because Docker-passed device nodes can appear inside the container as `root:root` with permissions that prevent the `vscode` user from opening the ST-Link, even though `lsusb` can still see it.
 
 ## Why The Permission Fix Exists
@@ -130,7 +132,7 @@ Run these inside the container:
 lsusb
 ls -l /dev/bus/usb/*/*
 lsusb -v -d 0483:374b | head -n 20
-/home/vscode/.local/share/stm32cube/bundles/programmer/2.22.0+st.1/bin/STM32_Programmer_CLI -l stlink
+STM32_Programmer_CLI -l stlink
 ```
 
 If permissions are correct, `STM32_Programmer_CLI -l stlink` should list the connected probe.

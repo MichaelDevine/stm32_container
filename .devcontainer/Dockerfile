@@ -31,6 +31,23 @@ RUN apt-get update && apt-get install -y \
     xz-utils file make gcc gcc-multilib g++-multilib libsdl2-dev libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
+RUN cat <<'EOF' >/usr/local/bin/STM32_Programmer_CLI
+#!/usr/bin/env bash
+set -euo pipefail
+
+shopt -s nullglob
+matches=(/home/vscode/.local/share/stm32cube/bundles/programmer/*/bin/STM32_Programmer_CLI)
+
+if [ "${#matches[@]}" -eq 0 ]; then
+    printf 'STM32_Programmer_CLI is not installed yet. Allow the STM32 extension to finish installing the programmer bundle.\n' >&2
+    exit 127
+fi
+
+latest_cli=$(printf '%s\n' "${matches[@]}" | sort -V | tail -n 1)
+exec "$latest_cli" "$@"
+EOF
+RUN chmod 755 /usr/local/bin/STM32_Programmer_CLI
+
 # Install ARM GCC toolchain (14.2.Rel1)
 #RUN wget https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
 #RUN tar -xf arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz -C /opt
@@ -73,6 +90,3 @@ RUN echo "KERNEL==\"ttyACM[0-9]*\", MODE=\"0666\"" >> /etc/udev/rules.d/99-stm32
 
 USER vscode
 WORKDIR /workspaces
-
-
-

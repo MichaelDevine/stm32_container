@@ -53,15 +53,16 @@ RUN mkdir -p /home/vscode && \
 USER vscode
 
 # Do user-level Zephyr installs and setup
-RUN python3 -m venv /home/vscode/.venv && \
-    /home/vscode/.venv/bin/pip install west && \
-    /home/vscode/.venv/bin/west init /home/vscode/zephyrproject --mr v4.3.0 && \
+RUN mkdir -p /home/vscode/zephyrproject && \
+    python3 -m venv /home/vscode/zephyrproject/.venv && \
+    /home/vscode/zephyrproject/.venv/bin/pip install west && \
+    /home/vscode/zephyrproject/.venv/bin/west init /home/vscode/zephyrproject --mr v4.3.0 && \
     cd /home/vscode/zephyrproject && \
-    /home/vscode/.venv/bin/west update && \
-    /home/vscode/.venv/bin/west zephyr-export && \
-    /home/vscode/.venv/bin/west packages pip --install && \
+    /home/vscode/zephyrproject/.venv/bin/west update && \
+    /home/vscode/zephyrproject/.venv/bin/west zephyr-export && \
+    /home/vscode/zephyrproject/.venv/bin/west packages pip --install && \
     cd /home/vscode/zephyrproject/zephyr && \
-    /home/vscode/.venv/bin/west sdk install
+    /home/vscode/zephyrproject/.venv/bin/west sdk install
 
 USER root
 

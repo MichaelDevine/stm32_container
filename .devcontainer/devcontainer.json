@@ -26,10 +26,16 @@
 				// Extensions installed inside the container.
 			"extensions": [
 				"ms-vscode.cpptools", // C/C++ IntelliSense, debugging, and code browsing
+                                "ms-vscode.cpptools-extension-pack",
 				"ms-vscode.cmake-tools", // CMake integration for building
+                                "ms-vscode.vscode-embedded-tools",
 				"stmicroelectronics.stm32-vscode-extension", // Official STM32 VS Code extension
 				"marus25.cortex-debug", // Debugging for ARM Cortex-M microcontrollers
-				"ms-vscode.vscode-serial-monitor" // Serial terminal for COM port
+                                "marus25.cortex-debug-dp-stm32l4",
+				"ms-vscode.vscode-serial-monitor", // Serial terminal for COM port
+                                "trond-snekvik.gnu-mapfiles",
+                                "shd101wyy.markdown-preview-enhanced",
+                                "xaver.clang-format"
 			],
 			"settings": {
 					"terminal.integrated.shell.linux": "/bin/bash",

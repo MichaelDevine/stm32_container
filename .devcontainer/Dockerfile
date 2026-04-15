@@ -89,4 +89,4 @@ RUN echo "SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"0483\", MODE=\"0666\"" >> /etc/
 RUN echo "KERNEL==\"ttyACM[0-9]*\", MODE=\"0666\"" >> /etc/udev/rules.d/99-stm32-usb.rules
 
 USER vscode
-WORKDIR /workspaces
+WORKDIR /home/vscode/zephyrproject

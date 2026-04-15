@@ -12,6 +12,8 @@
 	"build": {
 			"dockerfile": "Dockerfile"
 		},
+	"workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/zephyrproject/${localWorkspaceFolderBasename},type=bind",
+	"workspaceFolder": "/home/vscode/zephyrproject/${localWorkspaceFolderBasename}",
 	// Linux assigns a new DEVNUM when usbipd re-enumerates the ST-LINK, so do not bind a
 	// single /dev/bus/usb/BBB/DDD node here. devcontainer.bat persists the discovered bus
 	// mount path in USB_STLINK_BUS_DIR, and the device cgroup rule allows USB character
@@ -46,7 +48,6 @@
 	},
 
 	"mounts": [
-		"source=${localWorkspaceFolder},target=/workspace,type=bind",
 		"source=${localEnv:USB_STLINK_BUS_DIR},target=${localEnv:USB_STLINK_BUS_DIR},type=bind"
 	],
 	"postStartCommand": "sudo bash ${containerWorkspaceFolder}/.devcontainer/fix-device-permissions.sh",

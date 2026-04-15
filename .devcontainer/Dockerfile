@@ -28,6 +28,27 @@ RUN apt-get update && apt-get install -y \
     nano=7.2-2ubuntu0.1 \
     && rm -rf /var/lib/apt/lists/*
 
+# This creates a script that will dynamically find and launch STM32_Programmer_CLI
+# which at this time is installed in a verisoned location which could change.
+# STM32_Programmer_CLI is installed by the STMicro plugin. 
+RUN cat <<'EOF' >/usr/local/bin/STM32_Programmer_CLI
+#!/usr/bin/env bash
+set -euo pipefail
+
+shopt -s nullglob
+matches=(/home/vscode/.local/share/stm32cube/bundles/programmer/*/bin/STM32_Programmer_CLI)
+
+if [ "${#matches[@]}" -eq 0 ]; then
+    printf 'STM32_Programmer_CLI is not installed yet. Allow the STM32 extension to finish installing the programmer bundle.\n' >&2
+    exit 127
+fi
+
+latest_cli=$(printf '%s\n' "${matches[@]}" | sort -V | tail -n 1)
+exec "$latest_cli" "$@"
+EOF
+RUN chmod 755 /usr/local/bin/STM32_Programmer_CLI
+
+# This is an example toolchain setup. Change it to yours here. 
 # Install ARM GCC toolchain (14.2.Rel1)
 RUN wget https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
 RUN tar -xf arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz -C /opt
@@ -41,7 +62,16 @@ ENV ARM_GCC_PATH="/opt/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi/bin"
 RUN useradd -m -s /bin/bash vscode && echo "vscode:vscode" | chpasswd && adduser vscode sudo
 RUN usermod -a -G plugdev vscode
 RUN usermod -a -G dialout vscode
-# (Optional) Ensure the user is not prompted for a password when using sudo
+
+# Paths in bash after Dev Containers sets it up are long. This makes the prompt in 
+# bash more reasonable.
+RUN cat <<'EOF' >> /home/vscode/.bashrc
+PS1='\W\\$ '
+EOF
+RUN chown vscode:vscode /home/vscode/.bashrc
+
+# (Optional) Ensure the user is not prompted for a password when using sudo. The container
+# is NOT running privileged, so this introduces minimal risk to the host
 RUN echo "vscode ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # UDEV rules are not sufficient for passed-through device nodes in this container, but keep
@@ -50,4 +80,4 @@ RUN echo "SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"0483\", MODE=\"0666\"" >> /etc/
 RUN echo "KERNEL==\"ttyACM[0-9]*\", MODE=\"0666\"" >> /etc/udev/rules.d/99-stm32-usb.rules
 
 USER vscode
-WORKDIR /workspace
+WORKDIR /workspaces

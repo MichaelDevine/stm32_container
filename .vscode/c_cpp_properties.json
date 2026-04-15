@@ -1,6 +1,8 @@
 {
     "configurations": [
         {
+            // Example Settings for GNU 14.2 toolchain with Intellisense working well.
+            // Change to your preferences.
             "name": "Linux",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json",
             "cStandard": "c17",

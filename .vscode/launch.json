@@ -7,6 +7,8 @@
 
 {
     "version": "0.2.0",
+    // Example debug launch configurations. Change STM32XXXX to your board and the elf
+    // to your build output.
     "configurations": [
         {
             "name": "STM32XXXX: Run and Debug",

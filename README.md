@@ -5,7 +5,7 @@ Company: Circumjovial, LLC
 License: MIT License  
 Version: 0.1
 
-This repository contains a VS Code Dev Container setup for STM32 development with an ST-Link debugger attached through `usbipd` and Docker Desktop.
+This repository contains a VS Code Dev Container setup for STM32 development with an ST-Link debugger attached through `usbipd` and Docker Desktop. 
 
 ## Overview
 
@@ -17,8 +17,6 @@ The container is set up to provide:
 - STM32 VS Code extensions
 - Serial access through `/dev/ttyACM0`
 - ST-Link access from inside the container without running the container as `--privileged`
-
-The current design is intended to survive ST-Link re-enumeration on the same Linux USB bus, where the usbfs path may change from `/dev/bus/usb/001/004` to `/dev/bus/usb/001/005`, and so on.
 
 ## How It Works
 

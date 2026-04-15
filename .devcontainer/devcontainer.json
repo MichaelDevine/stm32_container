@@ -12,10 +12,12 @@
 	"build": {
 			"dockerfile": "Dockerfile"
 		},
-	// Linux assigns a new DEVNUM when usbipd re-enumerates the ST-LINK, so do not bind a
-	// single /dev/bus/usb/BBB/DDD node here. devcontainer.bat persists the discovered bus
-	// mount path in USB_STLINK_BUS_DIR, and the device cgroup rule allows USB character
-	// device read/write access without mknod.
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	// Linux assigns a new DEVNUM whenever usbipd re-binds the ST-LINK, and that number
+	// may be different than on Windows, so the only way to share the device through is 
+	// by giving permissions to the USB bus that it's on. To ensure maximum containerization,
+	// don't put any other devices on that USB bus. 
 	"runArgs": [
 		"--device-cgroup-rule",
 		"c 189:* rw",
@@ -23,7 +25,7 @@
 	],
 	"customizations": {
 		"vscode": {
-				// Extensions installed inside the container.
+				// Extensions installed inside the container. 
 			"extensions": [
 				"ms-vscode.cpptools", // C/C++ IntelliSense, debugging, and code browsing
 				"ms-vscode.cmake-tools", // CMake integration for building
@@ -31,6 +33,7 @@
 				"marus25.cortex-debug", // Debugging for ARM Cortex-M microcontrollers
 				"ms-vscode.vscode-serial-monitor" // Serial terminal for COM port
 			],
+			// These settings help Intellisense work
 			"settings": {
 					"terminal.integrated.shell.linux": "/bin/bash",
 						"C_Cpp.default.compilerPath": "target",
@@ -39,14 +42,19 @@
 		}
 	},
 
+	// The ST-Link USB device is mounted as a character device. The permissions rule above
+	// makes this possible. 
 	"mounts": [
-		"source=${localWorkspaceFolder},target=/workspace,type=bind",
 		"source=${localEnv:USB_STLINK_BUS_DIR},target=${localEnv:USB_STLINK_BUS_DIR},type=bind"
 	],
-	"postStartCommand": "sudo bash ${containerWorkspaceFolder}/.devcontainer/fix-device-permissions.sh",
+	// Fix up the workspace folder and also set the permissions for the USB device and 
+	// serial port to be used inside the container. 
+	"postStartCommand": "sudo bash \"${containerWorkspaceFolder}/.devcontainer/post-start.sh\" \"${containerWorkspaceFolder}\"",
 
+	// If you change this, make sure you change it everywhere else in these scripts!
 	"remoteUser": "vscode",
 
 	// This command runs on the host before startup and attaches a supported ST-Link to Docker Desktop via usbipd.
+	// The first time the device is bound this will require elevated permissions and you'll be prompted.
 	"initializeCommand" : ".devcontainer\\devcontainer.bat"
 }

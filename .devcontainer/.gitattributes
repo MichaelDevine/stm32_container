@@ -1,0 +1,4 @@
+# .bat files must be CRLF — cmd.exe batch label resolution is unreliable
+# with LF-only endings (silent "label not found" even when the label exists).
+*.bat text eol=crlf
+*.cmd text eol=crlf

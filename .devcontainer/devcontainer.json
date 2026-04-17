@@ -48,7 +48,11 @@
 	"remoteUser": "vscode",
 
 	// This command runs on the host before startup, attaches a supported ST-Link via
-	// usbipd, accepts the host project folder name from devcontainer.json, and writes the values needed by
-	// docker-compose to .devcontainer/.env for path and USB bind-mount substitution.
-	"initializeCommand" : ".devcontainer\\devcontainer.bat ${localWorkspaceFolderBasename}"
+	// usbipd, accepts a comma-separated list of NAME=VALUE pairs from devcontainer.json,
+	// and writes them to .devcontainer/.env for docker-compose path and USB bind-mount
+	// substitution. Add more pairs by extending the string below, e.g. "a=b,c=d,e=f".
+	"initializeCommand" : [
+		".devcontainer\\devcontainer.bat",
+		"HOST_PROJECT_NAME=${localWorkspaceFolderBasename},ABC=CDE"
+	]
 }

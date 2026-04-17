@@ -9,7 +9,10 @@ REM Version: 0.1
 setlocal enabledelayedexpansion
 
 REM Local initialization script for things that devcontainer.json can't do.
-REM Find, Bind, and Attach ST-Link debugger using usbipd.
+REM Find, Bind, and Attach ST-Link debugger using usbipd and add environment
+REM variables to the .env file for Docker to pick up.
+
+set "HOST_PROJECT_NAME=%~1"
 
 echo devcontainer.bat runs on host to bridge USB devices
 echo to the dev container:
@@ -25,8 +28,12 @@ set "STLINK_USB_BUS_DIR="
 set "UNSUPPORTED_STLINK_BUSID="
 set "UNSUPPORTED_STLINK_HARDWARE_ID="
 
-REM Clear the saved bus mount path so a failed discovery does not leave a stale value behind.
-setx USB_STLINK_BUS_DIR "" >nul
+if not defined HOST_PROJECT_NAME (
+    call :fail "HOST_PROJECT_NAME argument is required. Pass ${localWorkspaceFolderBasename} from devcontainer.json."
+    goto :finish
+)
+
+echo Host project folder name: !HOST_PROJECT_NAME!
 
 REM Find an ST-Link device, confirm its hardware ID is in the supported list,
 REM and then bind/attach it with usbipd.
@@ -122,14 +129,17 @@ if /i "!USBIPD_DEVICE_STATE!"=="Attached" (
 for /f "tokens=1 delims=-" %%i in ("!STLINK_BUSID!") do set "STLINK_USB_BUS_NUMBER=%%i"
 set "STLINK_USB_BUS_NUMBER=000!STLINK_USB_BUS_NUMBER!"
 set "STLINK_USB_BUS_DIR=/dev/bus/usb/!STLINK_USB_BUS_NUMBER:~-3!"
-echo   Saving USB bus mount path: !STLINK_USB_BUS_DIR!
-setx USB_STLINK_BUS_DIR !STLINK_USB_BUS_DIR! >nul
+echo   Writing compose environment to .env:
+echo     HOST_PROJECT_NAME=!HOST_PROJECT_NAME!
+echo     USB_STLINK_BUS_DIR=!STLINK_USB_BUS_DIR!
+(
+    echo HOST_PROJECT_NAME=!HOST_PROJECT_NAME!
+    echo USB_STLINK_BUS_DIR=!STLINK_USB_BUS_DIR!
+) > "%~dp0.env"
 
 :finish
 
 echo.
-
-timeout /t 5 >nul
 
 exit /b !SCRIPT_EXIT_CODE!
 

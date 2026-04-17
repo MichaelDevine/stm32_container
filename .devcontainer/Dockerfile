@@ -79,7 +79,7 @@ RUN mkdir -p /home/vscode/zephyrproject && \
     /home/vscode/zephyrproject/.venv/bin/west zephyr-export && \
     /home/vscode/zephyrproject/.venv/bin/west packages pip --install && \
     cd /home/vscode/zephyrproject/zephyr && \
-    /home/vscode/zephyrproject/.venv/bin/west sdk install
+    /home/vscode/zephyrproject/.venv/bin/west sdk install -t arm-zephyr-eabi
 
 USER root
 

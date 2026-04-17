@@ -5,27 +5,20 @@
 // Web: www.circumjovial.com
 // Version: 0.1
 
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+// For devctonaiers.json format details, see https://aka.ms/devcontainer.json. 
+// For config options, see the README at:
+// https://github.com/devcontainers/templates/tree/main/src/ubuntu
+
 {
-	"name": "STM32 Dev Container",
-	"build": {
-			"dockerfile": "Dockerfile"
-		},
-	"workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/zephyrproject/${localWorkspaceFolderBasename},type=bind",
+	"name": "(${localWorkspaceFolderBasename})",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "dev",
 	"workspaceFolder": "/home/vscode/zephyrproject/${localWorkspaceFolderBasename}",
-	// Linux assigns a new DEVNUM when usbipd re-enumerates the ST-LINK, so do not bind a
-	// single /dev/bus/usb/BBB/DDD node here. devcontainer.bat persists the discovered bus
-	// mount path in USB_STLINK_BUS_DIR, and the device cgroup rule allows USB character
-	// device read/write access without mknod.
-	"runArgs": [
-		"--device-cgroup-rule",
-		"c 189:* rw",
-		"--device=/dev/ttyACM0"
-	],
 	"customizations": {
 		"vscode": {
-				// Extensions installed inside the container.
+				// Extensions installed inside the container. This list will be reduced to
+				// the minimum set needed for the Dev Container to work, and the optional ones
+				// will be specified in the code-workspace file
 			"extensions": [
 				"ms-vscode.cpptools", // C/C++ IntelliSense, debugging, and code browsing
         "ms-vscode.cpptools-extension-pack",
@@ -46,14 +39,16 @@
 				}
 		}
 	},
+	"remoteEnv": {
+		"HOST_PROJECT_NAME": "${localWorkspaceFolderBasename}"
+	},
 
-	"mounts": [
-		"source=${localEnv:USB_STLINK_BUS_DIR},target=${localEnv:USB_STLINK_BUS_DIR},type=bind"
-	],
 	"postStartCommand": "sudo bash \"${containerWorkspaceFolder}/.devcontainer/post-start.sh\" \"${containerWorkspaceFolder}\"",
 
 	"remoteUser": "vscode",
 
-	// This command runs on the host before startup and attaches a supported ST-Link to Docker Desktop via usbipd.
-	"initializeCommand" : ".devcontainer\\devcontainer.bat"
+	// This command runs on the host before startup, attaches a supported ST-Link via
+	// usbipd, accepts the host project folder name from devcontainer.json, and writes the values needed by
+	// docker-compose to .devcontainer/.env for path and USB bind-mount substitution.
+	"initializeCommand" : ".devcontainer\\devcontainer.bat ${localWorkspaceFolderBasename}"
 }

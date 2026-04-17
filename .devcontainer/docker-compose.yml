@@ -1,0 +1,29 @@
+# Author: Michael Devine
+# Company: Circumjovial, LLC
+# Copyright (c): 2026
+# License: MIT License
+# Web: www.circumjovial.com
+# Version: 0.1
+#
+# Compose reads .env from this directory fresh on every `up`, so the
+# host project folder name and ST-Link bus path discovered by
+# devcontainer.bat propagate into the container without relying on
+# Windows registry / VS Code env caching.
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/home/vscode/zephyrproject/${HOST_PROJECT_NAME}:cached
+      - ${USB_STLINK_BUS_DIR}:${USB_STLINK_BUS_DIR}
+    environment:
+      HOST_PROJECT_NAME: ${HOST_PROJECT_NAME}
+    devices:
+      - /dev/ttyACM0
+    device_cgroup_rules:
+      - "c 189:* rw"
+    user: vscode
+    working_dir: /home/vscode/zephyrproject/${HOST_PROJECT_NAME}
+    command: sleep infinity

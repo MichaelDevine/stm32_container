@@ -31,21 +31,15 @@
 	"workspaceFolder": "/home/vscode/zephyrproject/${localWorkspaceFolderBasename}",
 	"customizations": {
 		"vscode": {
-				// Extensions installed inside the container. This list will be reduced to
-				// the minimum set needed for the Dev Container to work, and the optional ones
-				// will be specified in the code-workspace file.
+			// Extensions required for the Dev Container to build, flash, debug,
+			// and interact with the target. User will be prompted in the alert area
+			// in VS Code to confirm install. 
 			"extensions": [
 				"ms-vscode.cpptools", // C/C++ IntelliSense, debugging, and code browsing
-        "ms-vscode.cpptools-extension-pack",
 				"ms-vscode.cmake-tools", // CMake integration for building
-        "ms-vscode.vscode-embedded-tools",
 				"stmicroelectronics.stm32-vscode-extension", // Official STM32 VS Code extension
 				"marus25.cortex-debug", // Debugging for ARM Cortex-M microcontrollers
-        "marus25.cortex-debug-dp-stm32l4",
-				"ms-vscode.vscode-serial-monitor", // Serial terminal for COM port
-        "trond-snekvik.gnu-mapfiles",
-        "shd101wyy.markdown-preview-enhanced",
-        "xaver.clang-format"
+				"ms-vscode.vscode-serial-monitor" // Serial terminal for COM port
 			],
 			"settings": {
 					"terminal.integrated.shell.linux": "/bin/bash",

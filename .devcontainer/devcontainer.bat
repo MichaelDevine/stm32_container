@@ -8,9 +8,15 @@ REM Version: 0.1
 
 setlocal enabledelayedexpansion
 
-REM Local initialization script for things that devcontainer.json can't do.
-REM Find, Bind, and Attach ST-Link debugger using usbipd and add environment
-REM variables to the .env file for Docker to pick up.
+REM This script runs on the host before the rest of the devcontainer.json is processed. 
+REM It serves two purposes:
+REM 1. It attaches a supported ST-Link via usbipd so that it will be available to 
+REM    flashing, debugging, and terminal tools inside the containter without the 
+REM    container having to run "privileged. The path to the USB bus the device is on 
+REM    is then saved to a .env file in the .devcontainer folder on the host which is then
+REM    picked up by Docker. 
+REM 2. It accepts additional parameters that are written to the .env file created 
+REM    in 1. These These are specified in a comma-delimited string of name-value pairs.
 
 echo devcontainer.bat runs on host to bridge USB devices
 echo to the dev container:

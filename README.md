@@ -5,98 +5,19 @@ Company: Circumjovial, LLC
 License: MIT License  
 Version: 0.1
 
-This repository contains a VS Code Dev Container setup for STM32 development with an ST-Link debugger attached through `usbipd` and Docker Desktop.
+This repository contains a VS Code Dev Container setup for STM32 development on a WIndows 11 host with an ST-Link debugger 
+attached through `usbipd` and Docker Desktop. A key feature of the setup is that the Docker container is NOT run "privileged" 
+so that host security is not compromised. 
 
 ## Overview
 
-The container is set up to provide:
+The container installs the minimum necessary for basic STM32 development. Users can add additional plugins
+to the devcontainer.json file and additional apt-installed packages to the Dockerfile.
 
-- ARM GCC toolchain
-- CMake and Ninja
-- OpenOCD
-- STM32 VS Code extensions
-- Serial access through `/dev/ttyACM0`
-- ST-Link access from inside the container without running the container as `--privileged`
-
-The current design is intended to survive ST-Link re-enumeration on the same Linux USB bus, where the usbfs path may change from `/dev/bus/usb/001/004` to `/dev/bus/usb/001/005`, and so on.
-
-## How It Works
-
-### Host-side setup
-
-Before the container starts, VS Code runs [`.devcontainer/devcontainer.bat`](.devcontainer/devcontainer.bat) on the host.
-
-That script:
-
-1. Finds a supported ST-Link device using `usbipd list`
-2. Binds and attaches it with `usbipd`
-3. Derives the Linux usbfs bus directory for the attached device
-4. Saves that path to the host environment variable `USB_STLINK_BUS_DIR`
-
-The current script supports these ST-Link hardware IDs:
-
-- `0483:3744`
-- `0483:3748`
-- `0483:374B`
-- `0483:3752`
-- `0483:374E`
-- `0483:374F`
-- `0483:3753`
-- `0483:3757`
-
-### Container-side setup
-
-The dev container definition in [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json):
-
-- bind-mounts the workspace
-- bind-mounts the detected usbfs bus directory from `USB_STLINK_BUS_DIR`
-- passes through `/dev/ttyACM0`
-- adds the Docker device cgroup rule `c 189:* rw` for USB character devices
-- runs [`.devcontainer/fix-device-permissions.sh`](.devcontainer/fix-device-permissions.sh) after startup
-
-The image in [`.devcontainer/Dockerfile`](.devcontainer/Dockerfile) also installs a wrapper at `/usr/local/bin/STM32_Programmer_CLI`. That wrapper resolves the newest installed STM32 programmer bundle at runtime, so the command works even when the extension installs or updates the bundle after container startup.
-
-The startup permission-fix script is needed because Docker-passed device nodes can appear inside the container as `root:root` with permissions that prevent the `vscode` user from opening the ST-Link, even though `lsusb` can still see it.
-
-## Why The Permission Fix Exists
-
-The image contains `udev` rules for STM32 USB and `ttyACM` devices in [`.devcontainer/Dockerfile`](.devcontainer/Dockerfile), but those rules are not sufficient on their own for Docker-passed device nodes.
-
-In practice:
-
-- the ST-Link may appear inside the container with restrictive ownership and mode
-- the STM32 VS Code extension can then see the USB bus but fail to open the probe
-- ST tooling reports the debugger as unusable until permissions are corrected
-
-The post-start script repairs ownership and mode for:
-
-- ST USB device nodes, using group `plugdev`
-- `/dev/ttyACM*`, using group `dialout`
-
-## Why The USB Path Changes
-
-The trailing number in a path like `/dev/bus/usb/001/004` is the Linux USB `DEVNUM` assigned during enumeration.
-
-That number is chosen by the Linux USB stack, not by Docker. In this setup the numbering happens on the Linux side of the Docker Desktop or WSL `usbipd` path under `vhci_hcd`. Rebinding or reattaching the ST-Link can cause the same debugger to reappear as:
-
-- `/dev/bus/usb/001/004`
-- `/dev/bus/usb/001/005`
-- `/dev/bus/usb/001/006`
-
-The current workaround avoids hardcoding that trailing device number.
-
-## Scope Of USB Access
-
-This setup exposes usbfs character device nodes needed by libusb-based tools such as ST-Link utilities. It does **not** grant general-purpose drive mounting from inside the container.
-
-Important distinction:
-
-- ST-Link access uses character devices such as `/dev/bus/usb/001/004`
-- USB storage devices typically appear as block devices such as `/dev/sdX`
-- the container is not run with `--privileged`
-- the container is not granted `CAP_SYS_ADMIN`
-
-So this configuration is for debugger and serial access, not for mounting arbitrary USB filesystems.
+The current implementation uses the minimum practical way to get an ST-Link device shared through to the container without
+the container running provileged. This is accomplished by enabling enabling access only to the USB bus on which 
+the ST-Link device is found. Sharing just the port the device is on is not possible because it is not known which port it
+will be enumerated on each time the Docker container starts. 
 
 ## Requirements
 
@@ -107,60 +28,26 @@ Install:
 1. WSL 2 and Docker Desktop  
    <https://learn.microsoft.com/en-us/windows/wsl/install>
    Be sure to enable the "Use the WSL 2 based engine" setting.
-2. VS Code  
+2. VS Code
    <https://code.visualstudio.com/>
-3. The VS Code Dev Containers and Container Tools extensions
-4. `usbipd-win`  
+3. The VS Code Dev Containers extension
+4. `usbipd-win`
    <https://github.com/dorssel/usbipd-win/releases>
+5. Put the ".devcontainer" directory from this repo into the top level directory of your 
+   VS Code project.
 
-## Usage On Windows 11
+## Usage
 
 1. Connect the STM32 board to a USB port.
 2. Open this repository in VS Code on Windows.
-3. Reopen the folder in the dev container.
-4. Allow the extension and tool installs that VS Code prompts for.
-5. Wait for the host initialization script to bind and attach the supported ST-Link.
-6. After the container starts, verify that the STM32Cube Devices and Boards view shows the debugger.
+3. Hit CTRL-SHIFT P, and find and run Build and Reopen in Container.
+4. The first time the device is bound, usbipd needs to run elevated. YOu will be prompted for this. 
+5. Ignore a warning about the container possibly not being able to open because referenced directories don't exist on the host.
+   They will exist in the container. 
+5. Allow the extension installs that VS Code prompts for. If you miss the prompt, click the notificaitons icon (the bell)
+   in the lower right to see the notification to allow the installs.
+6. After the container starts, verify that the STM32Cube Devices and Boards view shows the debugger and Serial Terminal can 
+   connect to the serial device. 
 
-From then on, you should generally be able to reopen the folder and continue working without manually redoing the full setup.
-
-## Useful Verification Commands
-
-Run these inside the container:
-
-```bash
-lsusb
-ls -l /dev/bus/usb/*/*
-lsusb -v -d 0483:374b | head -n 20
-STM32_Programmer_CLI -l stlink
-```
-
-If permissions are correct, `STM32_Programmer_CLI -l stlink` should list the connected probe.
-
-## Troubleshooting
-
-### The ST-Link shows up in `lsusb` but not in the STM32Cube Devices view
-
-Check whether the user can actually open the device:
-
-```bash
-lsusb -v -d 0483:374b | head -n 20
-```
-
-If you see `Couldn't open device`, the issue is usually device-node permissions, not missing USB visibility.
-
-### The debugger path changed from `004` to `005`
-
-That is expected Linux USB re-enumeration behavior. The current setup is intended to tolerate that on the same detected bus directory.
-
-### The serial device path changes from `/dev/ttyACM0`
-
-That remains a separate issue. The current dev container still maps `/dev/ttyACM0` explicitly.
-
-## Repository Files
-
-- [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json): Dev container definition
-- [`.devcontainer/devcontainer.bat`](.devcontainer/devcontainer.bat): Host-side `usbipd` discovery and attach script
-- [`.devcontainer/fix-device-permissions.sh`](.devcontainer/fix-device-permissions.sh): Container-side permission repair
-- [`.devcontainer/Dockerfile`](.devcontainer/Dockerfile): Image definition
-- [`SESSION-2026-04-13.md`](SESSION-2026-04-13.md): Session notes for the USB permission and re-enumeration work
+In future runs, just "reopen in contianer" and it will open quiickly. If you change any of the files in the .devcontainer 
+directory, however, you will have to rebuild.

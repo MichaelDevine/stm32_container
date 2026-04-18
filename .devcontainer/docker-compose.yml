@@ -6,24 +6,28 @@
 # Version: 0.1
 #
 # Compose reads .env from this directory fresh on every `up`, so the
-# host project folder name and ST-Link bus path discovered by
-# devcontainer.bat propagate into the container without relying on
-# Windows registry / VS Code env caching.
+# container user, host project folder name, and ST-Link bus path discovered by
+# devcontainer.bat propagate into the container. If additional environment
+# variables are needed here, they can be added to the argument list to the
+# devcontainer.bat script in the devcontainer.json file initializeCommand.
 
 services:
   dev:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        CONTAINER_USER: ${CONTAINER_USER}
     volumes:
-      - ..:/home/vscode/zephyrproject/${HOST_PROJECT_NAME}:cached
+      - ..:/home/${CONTAINER_USER}/zephyrproject/${HOST_PROJECT_NAME}:cached
       - ${USB_STLINK_BUS_DIR}:${USB_STLINK_BUS_DIR}
     environment:
       HOST_PROJECT_NAME: ${HOST_PROJECT_NAME}
+      CONTAINER_USER: ${CONTAINER_USER}
     devices:
       - /dev/ttyACM0
     device_cgroup_rules:
       - "c 189:* rw"
-    user: vscode
-    working_dir: /home/vscode/zephyrproject/${HOST_PROJECT_NAME}
+    user: ${CONTAINER_USER}
+    working_dir: /home/${CONTAINER_USER}/zephyrproject/${HOST_PROJECT_NAME}
     command: sleep infinity

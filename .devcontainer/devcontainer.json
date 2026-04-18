@@ -13,12 +13,27 @@
 	"name": "(${localWorkspaceFolderBasename})",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "dev",
+	// This command runs on the host before the rest of the devcontainer.json is processed. 
+	// It serves two purposes:
+	// 1. It attaches a supported ST-Link via usbipd so that it will be available to 
+	// flashing, debugging, and terminal tools inside the containter without the 
+	// container having to run "privileged. The path to the USB bus the device is on 
+	// is then saved to a .env file in the .devcontainer folder on the host which is then
+	// picked up by Docker. 
+	// 2. It accepts additional parameters that are written to the .env file created 
+	// in 1. These These are specified in a comma-delimited string of name-value pairs.
+	"initializeCommand" : [
+		".devcontainer\\devcontainer.bat",
+		"HOST_PROJECT_NAME=${localWorkspaceFolderBasename},CONTAINER_USER=vscode"
+	],
+	// workspaceFolder is resolved before VS Code can read container environment
+	// variables, so this path must stay literal and match docker-compose.yml.
 	"workspaceFolder": "/home/vscode/zephyrproject/${localWorkspaceFolderBasename}",
 	"customizations": {
 		"vscode": {
 				// Extensions installed inside the container. This list will be reduced to
 				// the minimum set needed for the Dev Container to work, and the optional ones
-				// will be specified in the code-workspace file
+				// will be specified in the code-workspace file.
 			"extensions": [
 				"ms-vscode.cpptools", // C/C++ IntelliSense, debugging, and code browsing
         "ms-vscode.cpptools-extension-pack",
@@ -43,16 +58,6 @@
 		"HOST_PROJECT_NAME": "${localWorkspaceFolderBasename}"
 	},
 
-	"postStartCommand": "sudo bash \"${containerWorkspaceFolder}/.devcontainer/post-start.sh\" \"${containerWorkspaceFolder}\"",
+	"postStartCommand": "sudo bash \"${containerWorkspaceFolder}/.devcontainer/post-start.sh\" \"${containerWorkspaceFolder}\""
 
-	"remoteUser": "vscode",
-
-	// This command runs on the host before startup, attaches a supported ST-Link via
-	// usbipd, accepts a comma-separated list of NAME=VALUE pairs from devcontainer.json,
-	// and writes them to .devcontainer/.env for docker-compose path and USB bind-mount
-	// substitution. Add more pairs by extending the string below, e.g. "a=b,c=d,e=f".
-	"initializeCommand" : [
-		".devcontainer\\devcontainer.bat",
-		"HOST_PROJECT_NAME=${localWorkspaceFolderBasename},ABC=CDE"
-	]
 }

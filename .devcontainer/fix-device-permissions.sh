@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 
+# Author: Michael Devine
+# Company: Circumjovial, LLC
+# Copyright (c): 2026
+# License: MIT License
+# Web: www.circumjovial.com
+# Version: 0.1
+
+# This script ensures that the USB device permissions are set correctly.
+
 set -euo pipefail
 
-target_user="${SUDO_USER:-${USER:-vscode}}"
+target_user="${SUDO_USER:-${USER:-${CONTAINER_USER:-}}}"
 
 log_warning() {
     printf 'Warning: %s\n' "$*" >&2

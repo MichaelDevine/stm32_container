@@ -75,6 +75,12 @@ RUN mkdir -p "/home/${CONTAINER_USER}" && \
 
 USER ${CONTAINER_USER}
 
+# Paths in bash after Dev Containers sets it up are long. This makes the prompt in 
+# bash more reasonable.
+RUN cat <<'EOF' >> /home/${CONTAINER_USER}/.bashrc
+PS1='\W\\$ '
+EOF
+
 # Do user-level Zephyr installs and setup
 RUN mkdir -p "/home/${CONTAINER_USER}/zephyrproject" && \
     python3 -m venv "/home/${CONTAINER_USER}/zephyrproject/.venv" && \

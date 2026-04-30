@@ -16,3 +16,7 @@ set -euo pipefail
 workspace_dir="${1:?workspace path required}"
 
 bash "$workspace_dir/.devcontainer/fix-device-permissions.sh"
+
+if [[ ! -f /opt/st/stm32-svd/.manifest.json ]]; then
+	python3 "$workspace_dir/.devcontainer/install-stm32-svd.py" --dest /opt/st/stm32-svd
+fi

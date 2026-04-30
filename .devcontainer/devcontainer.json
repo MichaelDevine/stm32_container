@@ -5,10 +5,8 @@
 // Web: www.circumjovial.com
 // Version: 0.1
 
-// For devctonaiers.json format details, see https://aka.ms/devcontainer.json. 
-// For config options, see the README at:
-// https://github.com/devcontainers/templates/tree/main/src/ubuntu
-
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
 	"name": "(${localWorkspaceFolderBasename})",
 	"dockerComposeFile": "docker-compose.yml",
@@ -36,7 +34,9 @@
 			// in VS Code to confirm install. 
 			"extensions": [
 				"ms-vscode.cpptools", // C/C++ IntelliSense, debugging, and code browsing
+	            "ms-vscode.cpptools-extension-pack",
 				"ms-vscode.cmake-tools", // CMake integration for building
+	            "ms-vscode.vscode-embedded-tools",
 				"stmicroelectronics.stm32-vscode-extension", // Official STM32 VS Code extension
 				"marus25.cortex-debug", // Debugging for ARM Cortex-M microcontrollers
 				"ms-vscode.vscode-serial-monitor" // Serial terminal for COM port

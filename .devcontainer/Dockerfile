@@ -17,14 +17,23 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
+    autoconf \
+    automake \
     build-essential \
+    ca-certificates \
     cmake \
     git \
     wget \
     unzip \
+    libhidapi-dev \
+    libtool \
+    libtool-bin \
+    libusb-1.0-0-dev \
     openocd \
     ninja-build \
+    pkg-config \
     sudo \
+    texinfo \
     linux-tools-virtual-hwe-24.04 \
     usbutils \
     libusb-1.0-0 \
@@ -35,6 +44,9 @@ RUN apt-get update && apt-get install -y \
     xz-utils file make gcc gcc-multilib g++-multilib libsdl2-dev libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
+# This creates a script that will dynamically find and launch STM32_Programmer_CLI
+# which at this time is installed in a verisoned location which could change.
+# STM32_Programmer_CLI is installed by the STMicro plugin. 
 RUN cat <<'EOF' >/usr/local/bin/STM32_Programmer_CLI
 #!/usr/bin/env bash
 set -euo pipefail
@@ -52,6 +64,18 @@ exec "$latest_cli" "$@"
 EOF
 RUN chmod 755 /usr/local/bin/STM32_Programmer_CLI
 
+# Build the ST-maintained OpenOCD fork so STM32H5 devices are supported.
+ENV ST_OPENOCD_PREFIX="/opt/st/openocd"
+ENV ST_OPENOCD_BRANCH="openocd-cubeide-r7"
+RUN git clone --depth 1 --branch "${ST_OPENOCD_BRANCH}" https://github.com/STMicroelectronics/OpenOCD.git /tmp/st-openocd \
+    && cd /tmp/st-openocd \
+    && ./bootstrap \
+    && ./configure --prefix="${ST_OPENOCD_PREFIX}" --enable-stlink --disable-werror \
+    && make -j"$(nproc)" \
+    && make install-strip \
+    && ln -sf "${ST_OPENOCD_PREFIX}/bin/openocd" /usr/local/bin/openocd \
+    && rm -rf /tmp/st-openocd
+
 # Install ARM GCC toolchain (14.2.Rel1)
 #RUN wget https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
 #RUN tar -xf arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz -C /opt
@@ -60,6 +84,12 @@ RUN chmod 755 /usr/local/bin/STM32_Programmer_CLI
 # TODO Add Zephyr-installed toolchain to PATH
 #ENV PATH="/opt/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi/bin:${PATH}"
 #ENV ARM_GCC_PATH="/opt/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi/bin"
+ENV OPENOCD_SCRIPTS="${ST_OPENOCD_PREFIX}/share/openocd/scripts"
+ENV STM32_SVD_ROOT="/opt/st/stm32-svd"
+
+COPY install-stm32-svd.py /tmp/install-stm32-svd.py
+RUN python3 /tmp/install-stm32-svd.py --dest "${STM32_SVD_ROOT}" \
+    && rm /tmp/install-stm32-svd.py
 
 # Create non-root user
 RUN useradd -M -s /bin/bash "${CONTAINER_USER}" && \
@@ -85,7 +115,7 @@ EOF
 RUN mkdir -p "/home/${CONTAINER_USER}/zephyrproject" && \
     python3 -m venv "/home/${CONTAINER_USER}/zephyrproject/.venv" && \
     "/home/${CONTAINER_USER}/zephyrproject/.venv/bin/pip" install west && \
-    "/home/${CONTAINER_USER}/zephyrproject/.venv/bin/west" init "/home/${CONTAINER_USER}/zephyrproject" --mr v4.3.0 && \
+    "/home/${CONTAINER_USER}/zephyrproject/.venv/bin/west" init "/home/${CONTAINER_USER}/zephyrproject" --mr v4.4.0 && \
     cd "/home/${CONTAINER_USER}/zephyrproject" && \
     "/home/${CONTAINER_USER}/zephyrproject/.venv/bin/west" update && \
     "/home/${CONTAINER_USER}/zephyrproject/.venv/bin/west" zephyr-export && \

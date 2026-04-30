@@ -7,36 +7,37 @@
 
 {
     "version": "0.2.0",
-    // Example debug launch configurations. Change STM32XXXX to your board and the elf
-    // to your build output.
+    // Example debug launch configurations. Change NUCLEO_H563ZI to your board and the elf
+    // to your build output.The SVD files and CFG files for ST boards and processors are
+    // already installed, from ST's github. 
     "configurations": [
         {
-            "name": "STM32XXXX: Run and Debug",
+            "name": "NUCLEO_H563ZI: Run and Debug",
             "type": "cortex-debug",
             "request": "launch",
             "servertype": "openocd",
-            "device": "STM32XXXX",
+            "device": "STM32H563ZI",
             "runToEntryPoint": "main",
             "executable": "${workspaceFolder}/build/App/myproject.elf",
-            "svdFile": "${workspaceFolder}/.vscode/STM32XXXX.svd",
+            "svdFile": "${env:STM32_SVD_ROOT}/STM32H5xx_DFP/CMSIS/SVD/STM32H563.svd",
             "cwd": "${workspaceRoot}",
             "rtos": "auto",
             "configFiles": [
-                "board/STM32XXXX.cfg"
+                "${env:OPENOCD_SCRIPTS}/board/st_nucleo_h5.cfg"
             ]
         },
         {
-            "name": "STM L475E: Attach",
+            "name": "NUCLEO_H563ZI: Attach",
             "type": "cortex-debug",
             "request": "attach",
             "servertype": "openocd",
-            "device": "STM32XXXX",
+            "device": "STM32H563ZI",
             "executable": "${workspaceFolder}/build/App/myproject.elf",
-            "svdFile": "${workspaceFolder}/.vscode/STM32XXXX.svd",
+            "svdFile": "${env:STM32_SVD_ROOT}/STM32H5xx_DFP/CMSIS/SVD/STM32H563.svd",
             "cwd": "${workspaceRoot}",
             "rtos": "auto",
             "configFiles": [
-                "board/STM32XXXX.cfg"
+                "${env:OPENOCD_SCRIPTS}/board/st_nucleo_h5.cfg"
             ]
         }
     ],

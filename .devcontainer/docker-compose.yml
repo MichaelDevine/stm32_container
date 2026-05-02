@@ -1,0 +1,33 @@
+# Author: Michael Devine
+# Company: Circumjovial, LLC
+# Copyright (c): 2026
+# License: MIT License
+# Web: www.circumjovial.com
+# Version: 0.1
+#
+# Compose reads .env from this directory fresh on every `up`, so the
+# container user, host project folder name, and ST-Link bus path discovered by
+# devcontainer.bat propagate into the container. If additional environment
+# variables are needed here, they can be added to the argument list to the
+# devcontainer.bat script in the devcontainer.json file initializeCommand.
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CONTAINER_USER: ${CONTAINER_USER}
+    volumes:
+      - ..:/workspaces/${HOST_PROJECT_NAME}:cached
+      - ${USB_STLINK_BUS_DIR}:${USB_STLINK_BUS_DIR}
+    environment:
+      HOST_PROJECT_NAME: ${HOST_PROJECT_NAME}
+      CONTAINER_USER: ${CONTAINER_USER}
+    devices:
+      - /dev/ttyACM0
+    device_cgroup_rules:
+      - "c 189:* rw"
+    user: ${CONTAINER_USER}
+    working_dir: /workspaces/${HOST_PROJECT_NAME}
+    command: sleep infinity

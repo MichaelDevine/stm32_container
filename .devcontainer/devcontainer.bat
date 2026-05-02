@@ -8,8 +8,15 @@ REM Version: 0.1
 
 setlocal enabledelayedexpansion
 
-REM Local initialization script for things that devcontainer.json can't do.
-REM Find, Bind, and Attach ST-Link debugger using usbipd.
+REM This script runs on the host before the rest of the devcontainer.json is processed. 
+REM It serves two purposes:
+REM 1. It attaches a supported ST-Link via usbipd so that it will be available to 
+REM    flashing, debugging, and terminal tools inside the containter without the 
+REM    container having to run "privileged. The path to the USB bus the device is on 
+REM    is then saved to a .env file in the .devcontainer folder on the host which is then
+REM    picked up by Docker. 
+REM 2. It accepts additional parameters that are written to the .env file created 
+REM    in 1. These These are specified in a comma-delimited string of name-value pairs.
 
 echo devcontainer.bat runs on host to bridge USB devices
 echo to the dev container:
@@ -24,9 +31,53 @@ set "STLINK_USB_BUS_NUMBER="
 set "STLINK_USB_BUS_DIR="
 set "UNSUPPORTED_STLINK_BUSID="
 set "UNSUPPORTED_STLINK_HARDWARE_ID="
+set "HOST_ENV_PAIR_COUNT=0"
 
-REM Clear the saved bus mount path so a failed discovery does not leave a stale value behind.
-setx USB_STLINK_BUS_DIR "" >nul
+REM Use %* to grab the full argument tail as originally typed, bypassing cmd.exe's
+REM per-arg splitting on '=' / ',' / ';'. The input is expected as a single
+REM comma-separated list of NAME=VALUE pairs, e.g. "a=b,c=d".
+set "RAW_ENV_PAIRS=%*"
+
+if not defined RAW_ENV_PAIRS (
+    call :fail "At least one NAME=VALUE pair is required (comma-separated)."
+    goto :finish
+)
+
+REM Append a trailing comma so the parse loop terminates cleanly when the last
+REM pair is consumed.
+set "REMAINING=!RAW_ENV_PAIRS!,"
+
+:parsePairs
+if "!REMAINING!"=="," goto :argsParsed
+if not defined REMAINING goto :argsParsed
+
+set "CURRENT_PAIR="
+for /f "tokens=1* delims=," %%a in ("!REMAINING!") do (
+    set "CURRENT_PAIR=%%a"
+    set "REMAINING=%%b"
+)
+
+if not defined CURRENT_PAIR goto :parsePairs
+
+echo(!CURRENT_PAIR!| findstr /R /C:"^[A-Za-z_][A-Za-z0-9_]*=" >nul
+if errorlevel 1 (
+    call :fail "Pair '!CURRENT_PAIR!' is not a valid NAME=VALUE pair."
+    goto :finish
+)
+set /a HOST_ENV_PAIR_COUNT+=1
+set "HOST_ENV_PAIR_!HOST_ENV_PAIR_COUNT!=!CURRENT_PAIR!"
+goto :parsePairs
+
+:argsParsed
+if "!HOST_ENV_PAIR_COUNT!"=="0" (
+    call :fail "No NAME=VALUE pairs were parsed from the input."
+    goto :finish
+)
+
+echo Host environment pairs:
+for /l %%n in (1,1,!HOST_ENV_PAIR_COUNT!) do (
+    echo   !HOST_ENV_PAIR_%%n!
+)
 
 REM Find an ST-Link device, confirm its hardware ID is in the supported list,
 REM and then bind/attach it with usbipd.
@@ -122,14 +173,21 @@ if /i "!USBIPD_DEVICE_STATE!"=="Attached" (
 for /f "tokens=1 delims=-" %%i in ("!STLINK_BUSID!") do set "STLINK_USB_BUS_NUMBER=%%i"
 set "STLINK_USB_BUS_NUMBER=000!STLINK_USB_BUS_NUMBER!"
 set "STLINK_USB_BUS_DIR=/dev/bus/usb/!STLINK_USB_BUS_NUMBER:~-3!"
-echo   Saving USB bus mount path: !STLINK_USB_BUS_DIR!
-setx USB_STLINK_BUS_DIR !STLINK_USB_BUS_DIR! >nul
+echo   Writing compose environment to .env:
+for /l %%n in (1,1,!HOST_ENV_PAIR_COUNT!) do (
+    echo     !HOST_ENV_PAIR_%%n!
+)
+echo     USB_STLINK_BUS_DIR=!STLINK_USB_BUS_DIR!
+(
+    for /l %%n in (1,1,!HOST_ENV_PAIR_COUNT!) do (
+        echo !HOST_ENV_PAIR_%%n!
+    )
+    echo USB_STLINK_BUS_DIR=!STLINK_USB_BUS_DIR!
+) > "%~dp0.env"
 
 :finish
 
 echo.
-
-timeout /t 5 >nul
 
 exit /b !SCRIPT_EXIT_CODE!
 

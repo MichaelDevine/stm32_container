@@ -14,14 +14,14 @@ so that host security is not compromised.
 The container installs the minimum necessary for basic STM32 development. Users can add additional plugins
 to the devcontainer.json file and additional apt-installed packages to the Dockerfile.
 
-The current implementation uses the minimum practical way to get an ST-Link device shared through to the container without
+The implementation uses the minimal practical way to get an ST-Link device shared through to the container without
 the container running provileged. This is accomplished by enabling enabling access only to the USB bus on which 
-the ST-Link device is found. Sharing just the port the device is on is not possible because it is not known which port it
-will be enumerated on each time the Docker container starts. 
+the ST-Link device is found, and only to character devices on that bus. Sharing just the port the device is on 
+is not possible because it is not known which port it will be enumerated on each time the Docker container starts. 
 
 ## Requirements
 
-Deisgned for Windows 11 with Docker Desktop, WSL 2, VS Code, and `usbipd`.
+Designed for Windows 11 with Docker Desktop, WSL 2, VS Code, and `usbipd`.
 
 Install:
 
